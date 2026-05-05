@@ -1,0 +1,519 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-brand-50: #ecfeff;
+    --color-brand-100: #cffafe;
+    --color-brand-200: #a5f3fc;
+    --color-brand-300: #67e8f9;
+    --color-brand-400: #22d3ee;
+    --color-brand-500: #06b6d4;
+    --color-brand-600: #0891b2;
+    --color-brand-700: #0e7490;
+    --color-brand-800: #155e75;
+    --color-brand-900: #164e63;
+}
+
+/* ============================================
+   SIMBA WebGIS — Design System
+   ============================================ */
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: #0b1120;
+    color: #e2e8f0;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Glassmorphism Utilities ---------- */
+.glass {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.glass-light {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- Layout ---------- */
+.simba-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ---------- Sidebar ---------- */
+.simba-sidebar {
+    width: 280px;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 1.5rem;
+    z-index: 20;
+    border-right: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.simba-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+}
+
+.simba-logo-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #06b6d4, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+}
+
+.simba-logo-text h1 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #67e8f9, #22d3ee);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.simba-logo-text span {
+    font-size: 0.7rem;
+    color: #64748b;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Nav */
+.simba-nav { display: flex; flex-direction: column; gap: 0.25rem; }
+
+.simba-nav-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #475569;
+    padding: 0.75rem 0.75rem 0.35rem;
+}
+
+.simba-nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.simba-nav a:hover {
+    background: rgba(148, 163, 184, 0.08);
+    color: #e2e8f0;
+}
+
+.simba-nav a.active {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(59, 130, 246, 0.1));
+    color: #67e8f9;
+    box-shadow: inset 0 0 0 1px rgba(6, 182, 212, 0.2);
+}
+
+.simba-nav a .nav-icon {
+    width: 20px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+/* Legend */
+.simba-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.simba-legend-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #475569;
+    padding: 0 0.25rem;
+}
+
+.simba-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    padding: 0.25rem;
+}
+
+.simba-legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+/* Sidebar footer */
+.simba-sidebar-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.08);
+    font-size: 0.7rem;
+    color: #475569;
+    text-align: center;
+}
+
+/* ---------- Main Content ---------- */
+.simba-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Header */
+.simba-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    z-index: 10;
+}
+
+.simba-header-left h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: -0.01em;
+}
+
+.simba-header-left p {
+    margin: 0.15rem 0 0;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.simba-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.simba-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.simba-badge-live {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.simba-badge-live::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #34d399;
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ---------- Map Container ---------- */
+.simba-map-wrapper {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* ---------- Analysis Panel (Overlay) ---------- */
+.simba-analysis-overlay {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    right: 1.5rem;
+    max-width: 480px;
+    z-index: 1000;
+    border-radius: 16px;
+    padding: 1.5rem;
+    animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-up {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.simba-analysis-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.simba-analysis-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.simba-analysis-icon.danger {
+    background: rgba(239, 68, 68, 0.15);
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.15);
+}
+
+.simba-analysis-icon.safe {
+    background: rgba(16, 185, 129, 0.15);
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.15);
+}
+
+.simba-analysis-status {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.simba-analysis-status.danger { color: #f87171; }
+.simba-analysis-status.safe   { color: #34d399; }
+
+.simba-analysis-subtitle {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 0.1rem;
+}
+
+/* Stats Grid */
+.simba-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.simba-stat-card {
+    border-radius: 12px;
+    padding: 0.85rem;
+    transition: transform 0.2s ease;
+}
+
+.simba-stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.simba-stat-label {
+    font-size: 0.68rem;
+    color: #64748b;
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.simba-stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+}
+
+.simba-stat-unit {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: #64748b;
+    margin-left: 0.15rem;
+}
+
+/* Progress Bar */
+.simba-progress-wrapper {
+    margin-top: 1rem;
+    grid-column: 1 / -1;
+}
+
+.simba-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.simba-progress-label {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.simba-progress-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.simba-progress-value.danger { color: #f87171; }
+.simba-progress-value.safe   { color: #34d399; }
+
+.simba-progress-bar {
+    height: 8px;
+    border-radius: 8px;
+    background: rgba(148, 163, 184, 0.1);
+    overflow: hidden;
+}
+
+.simba-progress-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.simba-progress-fill.danger {
+    background: linear-gradient(90deg, #f87171, #ef4444);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+
+.simba-progress-fill.safe {
+    background: linear-gradient(90deg, #34d399, #10b981);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+/* ---------- Instructions Card ---------- */
+.simba-instructions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1rem;
+    border-radius: 12px;
+}
+
+.simba-instructions-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.simba-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    line-height: 1.5;
+}
+
+.simba-step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(59, 130, 246, 0.1));
+    color: #67e8f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .simba-sidebar {
+        display: none;
+    }
+    .simba-analysis-overlay {
+        left: 0.75rem;
+        right: 0.75rem;
+        bottom: 0.75rem;
+        max-width: none;
+    }
+}
+
+/* ---------- Leaflet Overrides ---------- */
+.leaflet-control-draw {
+    border-radius: 12px !important;
+    border: 1px solid rgba(148, 163, 184, 0.15) !important;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3) !important;
+}
+
+.leaflet-control-draw a {
+    background-color: rgba(15, 23, 42, 0.85) !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
+}
+
+.leaflet-control-draw a:hover {
+    background-color: rgba(30, 41, 59, 0.9) !important;
+}
+
+.leaflet-control-zoom {
+    border-radius: 12px !important;
+    border: 1px solid rgba(148, 163, 184, 0.15) !important;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3) !important;
+}
+
+.leaflet-control-zoom a {
+    background-color: rgba(15, 23, 42, 0.85) !important;
+    color: #e2e8f0 !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
+}
+
+.leaflet-control-zoom a:hover {
+    background-color: rgba(30, 41, 59, 0.9) !important;
+}
+
+/* Dark tile tint */
+.leaflet-tile-pane {
+    filter: brightness(0.85) contrast(1.1) saturate(0.9);
+}
