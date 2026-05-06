@@ -1,16 +1,14 @@
 <?php
 
 use App\Models\PetaRawanBanjir;
-use App\Http\Controllers\GeoJsonImportController;
+use App\Http\Controllers\SpatialLayerController;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\PetaSpk;
 
 Route::get('/', PetaSpk::class);
 
 Route::get('/status', function () {
-    // Menghitung total poligon yang ada di dalam database
     $jumlahPoligon = PetaRawanBanjir::count();
-
     return [
         'status' => 'Koneksi Berhasil',
         'database' => 'PostgreSQL + PostGIS',
@@ -19,7 +17,5 @@ Route::get('/status', function () {
     ];
 });
 
-// GeoJSON Import Routes
-Route::get('/import', [GeoJsonImportController::class, 'showForm'])->name('geojson.form');
-Route::post('/import', [GeoJsonImportController::class, 'import'])->name('geojson.import');
-Route::get('/api/stats', [GeoJsonImportController::class, 'stats'])->name('geojson.stats');
+// API endpoint for layer data (read-only)
+Route::get('/api/parameters/{parameterType}/data', [SpatialLayerController::class, 'getLayerData'])->name('parameters.data');

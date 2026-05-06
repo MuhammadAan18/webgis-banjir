@@ -10,64 +10,101 @@ class PetaSpk extends Component
     public $hasilAnalisis = null;
     public $errorMessage = null;
 
-    public function analisisLahan($geoJsonGeometry)
+    public function analisisLahan($geoJsonGeometry, $selectedParams = null)
     {
+        if ($selectedParams === null) {
+            $selectedParams = ['rainfall', 'slope', 'land_use', 'soil_type', 'rivers', 'elevation'];
+        }
+
         try {
-            // Validasi input GeoJSON
-            $geom = json_decode($geoJsonGeometry, true);
-            if (!$geom || !isset($geom['type'])) {
-                throw new \Exception('Format GeoJSON tidak valid');
-            }
-
-            // 1. Hitung Luas Total Lahan User
-            $queryTotal = DB::selectOne("
-                SELECT ST_Area(ST_Transform(ST_MakeValid(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326)), 32750)) AS luas_total
-            ", [$geoJsonGeometry]);
-
-            if (!$queryTotal || $queryTotal->luas_total === null) {
-                throw new \Exception('Gagal menghitung luas total');
-            }
-
-            $luasTotal = round($queryTotal->luas_total, 2);
-
-            // 2. Tabrakkan lahan User dengan Peta Rawan Banjir
-            // Gunakan ST_MakeValid untuk handle geometri invalid
-            $queryBanjir = DB::selectOne("
-                WITH user_geom AS (
-                    SELECT ST_Transform(ST_MakeValid(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326)), 32750) AS geom
+            // Query menggunakan CTE agar geometri user hanya di-parsing satu kali.
+            // Menggunakan tabel spatial_parameters yang terpadu (unified table).
+            // Kita menggunakan AVG (rata-rata) jika lahan user memotong lebih dari satu poligon parameter.
+            $query = DB::selectOne("
+                WITH user_area AS (
+                    SELECT ST_SetSRID(ST_GeomFromGeoJSON(?), 4326) AS geom
                 )
-                SELECT COALESCE(SUM(ST_Area(ST_Intersection(u.geom, ST_MakeValid(b.geom)))), 0) AS luas_banjir
-                FROM peta_rawan_banjir b, user_geom u
-                WHERE ST_Intersects(u.geom, b.geom)
-                  AND ST_IsValid(b.geom)
+                SELECT 
+                    COALESCE((SELECT AVG(score) FROM spatial_parameters b WHERE b.parameter_type = 'rainfall'    AND ST_Intersects(user_area.geom, b.geom)), 0) as s_hujan,
+                    COALESCE((SELECT AVG(score) FROM spatial_parameters b WHERE b.parameter_type = 'slope'       AND ST_Intersects(user_area.geom, b.geom)), 0) as s_lereng,
+                    COALESCE((SELECT AVG(score) FROM spatial_parameters b WHERE b.parameter_type = 'land_use'    AND ST_Intersects(user_area.geom, b.geom)), 0) as s_lahan,
+                    COALESCE((SELECT AVG(score) FROM spatial_parameters b WHERE b.parameter_type = 'soil_type'   AND ST_Intersects(user_area.geom, b.geom)), 0) as s_tanah,
+                    COALESCE((SELECT AVG(score) FROM spatial_parameters b WHERE b.parameter_type = 'rivers'      AND ST_Intersects(user_area.geom, b.geom)), 0) as s_sungai,
+                    COALESCE((SELECT AVG(score) FROM spatial_parameters b WHERE b.parameter_type = 'elevation'   AND ST_Intersects(user_area.geom, b.geom)), 0) as s_elevasi
+                FROM user_area
             ", [$geoJsonGeometry]);
 
-            $luasBanjir = round($queryBanjir->luas_banjir, 2);
+            $weights = [
+                'rainfall' => 0.30,
+                'slope' => 0.15,
+                'land_use' => 0.15,
+                'soil_type' => 0.15,
+                'rivers' => 0.15,
+                'elevation' => 0.10,
+            ];
 
-            // 3. Kalkulasi Sisa Lahan & Persentase
-            $luasAman = max(0, $luasTotal - $luasBanjir);
-            $persentaseBanjir = $luasTotal > 0 ? round(($luasBanjir / $luasTotal) * 100, 2) : 0;
-
-            // 4. Algoritma Keputusan SPK (Threshold Kelayakan)
-            if ($persentaseBanjir > 30) {
-                $status = 'TIDAK LAYAK BANGUN (Risiko Banjir Tinggi)';
-                $warnaBg = '#fecaca'; // Merah Muda
-                $warnaTeks = '#991b1b'; // Merah Tua
-            } else {
-                $status = 'LAYAK BANGUN (Aman dari Banjir)';
-                $warnaBg = '#d1fae5'; // Hijau Muda
-                $warnaTeks = '#065f46'; // Hijau Tua
+            $totalWeight = 0;
+            foreach ($selectedParams as $param) {
+                if (isset($weights[$param])) {
+                    $totalWeight += $weights[$param];
+                }
             }
 
-            // Simpan hasil
+            if ($totalWeight == 0) {
+                throw new \Exception("Pilih minimal satu parameter.");
+            }
+
+            $w_hujan = in_array('rainfall', $selectedParams) ? ($weights['rainfall'] / $totalWeight) : 0;
+            $w_lereng = in_array('slope', $selectedParams) ? ($weights['slope'] / $totalWeight) : 0;
+            $w_lahan = in_array('land_use', $selectedParams) ? ($weights['land_use'] / $totalWeight) : 0;
+            $w_tanah = in_array('soil_type', $selectedParams) ? ($weights['soil_type'] / $totalWeight) : 0;
+            $w_sungai = in_array('rivers', $selectedParams) ? ($weights['rivers'] / $totalWeight) : 0;
+            $w_elevasi = in_array('elevation', $selectedParams) ? ($weights['elevation'] / $totalWeight) : 0;
+
+            // Kalkulasi Skor Akhir (Weighted Overlay berdasarkan Jurnal)
+            $totalSkor = (
+                ($query->s_hujan * $w_hujan) +
+                ($query->s_lereng * $w_lereng) +
+                ($query->s_lahan * $w_lahan) +
+                ($query->s_tanah * $w_tanah) +
+                ($query->s_sungai * $w_sungai) +
+                ($query->s_elevasi * $w_elevasi)
+            );
+
+            // Klasifikasi Kerawanan Banjir (sesuai spesifikasi)
+            if ($totalSkor >= 4.0) {
+                $status = "SANGAT RAWAN";
+                $warnaBg = "#fee2e2";
+                $warnaTeks = "#7f1d1d";
+            } elseif ($totalSkor >= 3.0) {
+                $status = "RAWAN";
+                $warnaBg = "#ffedd5";
+                $warnaTeks = "#ea580c";
+            } elseif ($totalSkor >= 2.0) {
+                $status = "CUKUP AMAN";
+                $warnaBg = "#fef3c7";
+                $warnaTeks = "#d97706";
+            } else {
+                $status = "AMAN";
+                $warnaBg = "#d1fae5";
+                $warnaTeks = "#059669";
+            }
+
+            $detailSkor = [];
+            if (in_array('rainfall', $selectedParams)) $detailSkor['Curah Hujan (' . round(($weights['rainfall'] / $totalWeight) * 100) . '%)'] = round($query->s_hujan, 2);
+            if (in_array('slope', $selectedParams)) $detailSkor['Lereng (' . round(($weights['slope'] / $totalWeight) * 100) . '%)'] = round($query->s_lereng, 2);
+            if (in_array('land_use', $selectedParams)) $detailSkor['Lahan (' . round(($weights['land_use'] / $totalWeight) * 100) . '%)'] = round($query->s_lahan, 2);
+            if (in_array('soil_type', $selectedParams)) $detailSkor['Jenis Tanah (' . round(($weights['soil_type'] / $totalWeight) * 100) . '%)'] = round($query->s_tanah, 2);
+            if (in_array('rivers', $selectedParams)) $detailSkor['Jarak Sungai (' . round(($weights['rivers'] / $totalWeight) * 100) . '%)'] = round($query->s_sungai, 2);
+            if (in_array('elevation', $selectedParams)) $detailSkor['Elevasi (' . round(($weights['elevation'] / $totalWeight) * 100) . '%)'] = round($query->s_elevasi, 2);
+
+            // Simpan hasil untuk dikirim ke UI (Blade)
             $this->hasilAnalisis = [
-                'luas_total' => $luasTotal,
-                'luas_aman' => $luasAman,
-                'luas_banjir' => $luasBanjir,
-                'persentase_banjir' => $persentaseBanjir,
+                'skor_akhir' => round($totalSkor, 2),
                 'status' => $status,
                 'warna_bg' => $warnaBg,
                 'warna_teks' => $warnaTeks,
+                'detail_skor' => $detailSkor
             ];
             $this->errorMessage = null;
 
@@ -79,6 +116,7 @@ class PetaSpk extends Component
 
     public function render()
     {
-        return view('components.peta-spk');
+        return view('components.peta-spk')
+            ->layout('layouts.app', ['title' => 'SIMBA — Analisis Kerawanan Banjir']);
     }
 }
