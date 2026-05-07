@@ -6,7 +6,7 @@
         <meta name="description" content="SIMBA — Sistem Informasi Manajemen Banjir. Analisis risiko banjir berbasis WebGIS untuk Kota Mataram.">
         <meta name="keywords" content="WebGIS, banjir, Mataram, peta rawan banjir, SPK, analisis lahan">
 
-        <title>{{ $title ?? 'SIMBA — Sistem Informasi Manajemen Banjir' }}</title>
+        <title>{{ $title ?? 'WebGIS' }}</title>
 
         {{-- Google Fonts --}}
         <link rel="preconnect" href="https://fonts.googleapis.com">

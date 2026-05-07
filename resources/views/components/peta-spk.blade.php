@@ -2,8 +2,8 @@
     {{-- Map Container --}}
     <div class="flex-1 flex flex-col">
         {{-- Header --}}
-        <div class="bg-blue-600 text-white px-6 py-4 shadow">
-            <h1 class="text-2xl font-bold">WebGIS SPK - Analisis Kerawanan Banjir</h1>
+        <div class="bg-gray-900 text-white px-6 py-4 shadow flex flex-col items-center justify-center text-center">
+            <h1 class="text-2xl font-bold">Analisis Daerah Kerawanan Banjir Kota Mataram</h1>
             <p class="text-sm text-blue-100 mt-1">Gambar area lahan untuk analisis multi-parameter</p>
         </div>
 
@@ -23,7 +23,7 @@
         {{-- Layer Manager --}}
         <div class="flex-1 overflow-y-auto">
             <div class="p-4 border-b border-gray-200">
-                <h2 class="text-lg font-bold text-gray-900 mb-3">Layer Management</h2>
+                <h2 class="text-lg font-bold text-gray-900 mb-3 flex items-center justify-center">Parameter Management</h2>
 
                 {{-- Toggle All --}}
                 <button id="toggleAllLayers"
@@ -33,13 +33,13 @@
 
                 {{-- Parameter Layers --}}
                 <div class="space-y-2" id="layerList">
-                    <p class="text-xs text-gray-400 italic">Memuat layer...</p>
+                    <p class="text-xs text-gray-400 ">Memuat layer...</p>
                 </div>
 
                 {{-- Color Legend --}}
                 <div class="mt-6 p-3 bg-gray-50 rounded">
                     <h3 class="text-sm font-semibold text-gray-900 mb-2">Legenda Score</h3>
-                    <div class="space-y-1 text-xs">
+                    <div class="space-y-1 text-sm text-gray-700">
                         <div class="flex items-center">
                             <div class="w-4 h-4 rounded" style="background-color: #d9f0a3;"></div>
                             <span class="ml-2 text-gray-900">Score 1 (Rendah)</span>
@@ -63,10 +63,9 @@
                     </div>
                 </div>
 
-                {{-- Drawing Info --}}
                 <div class="mt-4 p-3 bg-blue-50 rounded border border-blue-200">
                     <p class="text-xs text-blue-800">
-                        <strong>Tip:</strong> Gunakan toolbar untuk menggambar polygon pada peta, kemudian klik tombol
+                        <strong>Tips:</strong> Gunakan toolbar untuk menggambar polygon pada peta, kemudian klik tombol
                         analisis di bawah untuk melihat hasil SPK.
                     </p>
                 </div>
@@ -74,7 +73,7 @@
 
             {{-- Analysis Results --}}
             <div class="p-4">
-                <h2 class="text-lg font-bold text-gray-900 mb-3">Hasil Analisis</h2>
+                <h2 class="text-lg font-bold text-gray-900 mb-3 flex items-center justify-center">Hasil Analisis</h2>
 
                 @if($hasilAnalisis)
                     <div class="p-3 rounded-lg mb-4"
@@ -127,20 +126,11 @@
                     </div>
                 @endif
 
-                {{-- Analyze Button --}}
                 <button id="analyzeBtn"
-                    class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-medium transition disabled:bg-gray-400 mt-3"
+                    class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition disabled:bg-gray-400 mt-3"
                     disabled>
                     Analisis Lahan
                 </button>
-
-                {{-- Download Result --}}
-                @if($hasilAnalisis)
-                    <button id="downloadBtn"
-                        class="w-full px-4 py-2 mt-2 bg-purple-600 hover:bg-purple-700 text-white rounded font-medium transition">
-                        Download Hasil
-                    </button>
-                @endif
             </div>
         </div>
 
@@ -151,11 +141,9 @@
     </div>
 </div>
 
-{{-- Leaflet JS already loaded in layouts/app.blade.php — no duplicate CDN here --}}
-
 <script>
     document.addEventListener('livewire:initialized', () => {
-        // Initialize map — Kota Mataram
+        // Initialize map Kota Mataram
         const map = L.map('map').setView([-8.5833, 116.1167], 13);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -163,11 +151,9 @@
             maxZoom: 19
         }).addTo(map);
 
-        // FeatureGroup for drawn polygons
         const drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
-        // Drawing control — polygon + rectangle per spec
         const drawControl = new L.Control.Draw({
             draw: {
                 polygon: true,
@@ -255,7 +241,7 @@
             layerList.innerHTML = '';
 
             if (Object.keys(parameterLayers).length === 0) {
-                layerList.innerHTML = '<p class="text-xs text-gray-400 italic">Tidak ada layer tersedia</p>';
+                layerList.innerHTML = '<p class="text-xs text-gray-400 ">Tidak ada layer tersedia</p>';
                 return;
             }
 
@@ -267,10 +253,10 @@
                 div.className = 'p-2 bg-gray-50 rounded flex items-center justify-between';
                 div.innerHTML = `
                     <label class="flex items-center cursor-pointer gap-2">
-                        <input type="checkbox" class="layer-toggle" data-param="${paramType}" ${layer.visible ? 'checked' : ''}>
+                        <input type="checkbox" class="layer-toggle accent-green-600 w-4 h-4" data-param="${paramType}" ${layer.visible ? 'checked' : ''}>
                         <span class="text-sm text-gray-700">
                             ${layer.config.label}
-                            <span class="text-gray-400">(${(layer.config.weight * 100).toFixed(0)}%)</span>
+                            <span class="text-black">(${(layer.config.weight * 100).toFixed(0)}%)</span>
                         </span>
                     </label>
                 `;
