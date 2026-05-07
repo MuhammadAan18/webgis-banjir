@@ -24,8 +24,7 @@ class SpatialLayerController extends Controller
                        ST_AsGeoJSON(geom) as geojson
                 FROM spatial_parameters
                 WHERE parameter_type = ?
-                  AND score >= 1 AND score <= 5
-                LIMIT 10000
+                LIMIT 15000
             ", [$parameterType]);
 
             $geoJsonFeatures = [];
